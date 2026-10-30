@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Video Clipper</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1 class="brand"><span class="brand-mark">✂</span> Video Clipper</h1>
+    <p class="tagline">Paste a link, trim to the millisecond, export.</p>
+  </header>
+
+  <main class="layout">
+    <section class="card" id="card-source">
+      <div class="card-head">
+        <span class="step">1</span>
+        <h2>Source</h2>
+      </div>
+      <form class="url-form" id="download-form">
+        <input
+          class="url-input"
+          id="url"
+          type="url"
+          required
+          placeholder="https://www.youtube.com/watch?v=..."
+          autocomplete="off"
+          spellcheck="false">
+        <select class="select" id="quality" aria-label="Maximum height">
+          <option value="720">720p</option>
+          <option value="1080" selected>1080p</option>
+          <option value="1440">1440p</option>
+          <option value="2160">2160p</option>
+        </select>
+        <button class="btn btn-primary" id="download-btn" type="submit">Download</button>
+      </form>
+      <div class="or-divider"><span>or</span></div>
+
+      <label class="dropzone" id="dropzone">
+        <input class="sr-only" id="file-input" type="file"
+               accept="video/*,.mkv,.webm,.mp4,.mov,.m4v,.avi,.ts,.flv,.mpg,.mpeg,.wmv">
+        <span class="dropzone-icon">⤓</span>
+        <span class="dropzone-text">
+          <strong>Drop a video file here</strong>
+          <small>or click to browse - already downloaded files skip the download step</small>
+        </span>
+      </label>
+
+      <div class="progress" id="download-progress" hidden>
+        <div class="progress-bar"><span class="progress-fill"></span></div>
+        <p class="progress-label">Queued</p>
+      </div>
+      <p class="error" id="download-error" hidden></p>
+    </section>
+
+    <section class="card" id="card-editor" hidden>
+      <div class="card-head">
+        <span class="step">2</span>
+        <h2>Trim</h2>
+        <p class="source-title" id="source-title"></p>
+        <p class="meta" id="source-meta"></p>
+      </div>
+
+      <div class="player">
+        <video id="preview" preload="auto" playsinline></video>
+      </div>
+
+      <p class="warning" id="preview-warning" hidden>
+        Your browser cannot play this file's codec, so the preview stays blank.
+        Trimming still works - use the timecode fields to set the range.
+      </p>
+
+      <div class="transport">
+        <button class="btn btn-ghost" id="play-btn" type="button" title="Space">▶ Play</button>
+        <button class="btn btn-ghost" id="frame-back" type="button" title=",">◀ Frame</button>
+        <button class="btn btn-ghost" id="frame-fwd" type="button" title=".">Frame ▶</button>
+        <span class="playhead-readout" id="playhead">00:00:000</span>
+        <button class="btn btn-ghost" id="loop-btn" type="button">⟳ Loop selection</button>
+      </div>
+
+      <div class="timeline" id="timeline">
+        <div class="timeline-track">
+          <div class="timeline-selection" id="timeline-selection"></div>
+          <div class="timeline-playhead" id="timeline-playhead"></div>
+          <button class="timeline-handle" id="handle-start" data-edge="start"
+                  type="button" aria-label="Selection start"></button>
+          <button class="timeline-handle" id="handle-end" data-edge="end"
+                  type="button" aria-label="Selection end"></button>
+        </div>
+      </div>
+
+      <div class="trim-grid">
+        <div class="trim-cell">
+          <div class="trim-head">
+            <label class="trim-label">Start</label>
+            <button class="btn btn-tiny" data-set-edge="start" type="button" title="I">
+              Use playhead
+            </button>
+          </div>
+          <div class="timecode" data-edge="start"></div>
+        </div>
+
+        <div class="trim-cell trim-cell-duration">
+          <label class="trim-label">Length</label>
+          <output class="duration-readout" id="duration-readout">00:00:000</output>
+        </div>
+
+        <div class="trim-cell">
+          <div class="trim-head">
+            <label class="trim-label">End</label>
+            <button class="btn btn-tiny" data-set-edge="end" type="button" title="O">
+              Use playhead
+            </button>
+          </div>
+          <div class="timecode" data-edge="end"></div>
+        </div>
+      </div>
+
+      <p class="hint">
+        Click <strong>▲▼</strong> or focus a field and use <kbd>↑</kbd><kbd>↓</kbd>.
+        Hold <kbd>Shift</kbd> for ×10, <kbd>Ctrl</kbd> for ×100 on milliseconds.
+      </p>
+
+      <div class="cut-row">
+        <fieldset class="modes">
+          <legend class="sr-only">Cut mode</legend>
+          <label class="mode">
+            <input type="radio" name="mode" value="precise" checked>
+            <span><strong>Precise</strong><small>re-encode, exact frame</small></span>
+          </label>
+          <label class="mode">
+            <input type="radio" name="mode" value="fast">
+            <span><strong>Fast</strong><small>stream copy, keyframe snap</small></span>
+          </label>
+        </fieldset>
+        <button class="btn btn-primary btn-cut" id="cut-btn" type="button">Cut clip</button>
+      </div>
+
+      <div class="progress" id="cut-progress" hidden>
+        <div class="progress-bar"><span class="progress-fill"></span></div>
+        <p class="progress-label">Queued</p>
+      </div>
+      <p class="error" id="cut-error" hidden></p>
+    </section>
+
+    <section class="card" id="card-result" hidden>
+      <div class="card-head">
+        <span class="step">3</span>
+        <h2>Result</h2>
+        <p class="meta" id="clip-meta"></p>
+      </div>
+      <div class="player player-small">
+        <video id="clip-preview" controls preload="metadata"></video>
+      </div>
+      <a class="btn btn-primary" id="clip-download" download>Save clip</a>
+    </section>
+  </main>
+
+  <script src="/static/app.js" type="module"></script>
+</body>
+</html>

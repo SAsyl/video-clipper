@@ -1,0 +1,12 @@
+{
+  "name": "video-clipper-tests",
+  "private": true,
+  "type": "module",
+  "description": "Dev-only dependency for the browser-side stepper tests",
+  "scripts": {
+    "test": "node tests/test_stepper.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.0"
+  }
+}
