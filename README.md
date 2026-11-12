@@ -8,10 +8,21 @@ arrow steppers, and export the clip. Wraps `yt-dlp` and `ffmpeg`.
 - `ffmpeg` and `ffprobe` on `PATH`
 - [`uv`](https://docs.astral.sh/uv/) (provisions Python 3.12 itself)
 
+## Setup
+
+```bash
+git clone https://github.com/SAsyl/video-clipper.git
+cd video-clipper
+uv sync --group dev   # optional: run.sh syncs on first start
+npm install           # only needed for the JS tests
+```
+
+No configuration or environment variables are required.
+
 ## Run
 
 ```bash
-./run.sh
+./run.sh              # extra args go to uvicorn, e.g. ./run.sh --port 9000
 ```
 
 Then open <http://127.0.0.1:8420>.
@@ -73,6 +84,8 @@ MKVs). Trimming still works — set the range with the timecode fields.
 
 ```
 app/
+  config.py      paths, binaries, limits (static, no env vars)
+  errors.py      domain exceptions
   main.py        FastAPI routes
   models.py      request/response schemas and validation
   jobs.py        in-memory job registry, worker threads
@@ -86,6 +99,8 @@ app/
   timecode.py    mm:ss:ms conversions
 web/
   index.html  styles.css  app.js  stepper.js  timecode.js  api.js
+tests/        pytest suites and jsdom stepper test
+run.sh        uv + uvicorn launcher on 127.0.0.1:8420
 media/        downloaded sources and generated clips (gitignored)
 ```
 
@@ -106,3 +121,7 @@ npm install && npm test            # stepper arrows, carry/borrow, clamping (jsd
   installing `deno` removes the warning and exposes a few extra formats.
 - yt-dlp requires Python 3.11+. `run.sh` pins 3.12 through `uv`, so a system Python 3.10
   does not matter.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
